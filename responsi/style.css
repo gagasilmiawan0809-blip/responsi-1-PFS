@@ -1,0 +1,117 @@
+/* Root colors */
+:root {
+  --bg: #f4f6f8;
+  --card: #ffffff;
+  --primary: #0d6efd;
+  --secondary: #6c757d;
+  --hover: #f1f3f5;
+  --accent: #3498db;
+}
+
+/* Body & layout */
+body {
+  background: var(--bg);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  margin: 0;
+}
+
+header.navbar {
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+/* Sidebar */
+.sidebar {
+  background: var(--card);
+  min-height: calc(100vh - 56px);
+  border-right: 1px solid rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+
+.sidebar .nav-link {
+  color: #555;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.sidebar .nav-link.active, 
+.sidebar .nav-link:hover {
+  background: var(--primary);
+  color: white;
+  border-radius: 6px;
+}
+
+/* Cards */
+.card {
+  background: var(--card);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.card .card-title {
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* Tables */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+th, td {
+  vertical-align: middle !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: var(--hover);
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(52, 152, 219, 0.1);
+  transform: translateY(-2px);
+  transition: all 0.2s;
+}
+
+/* Forms */
+form input, form select {
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  padding: 10px;
+  transition: all 0.2s;
+}
+
+form input:focus, form select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 8px rgba(13,110,253,0.2);
+}
+
+/* Buttons */
+button {
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+/* Modal */
+.modal-content {
+  border-radius: 10px;
+}
+
+/* Responsive */
+@media (max-width: 767.98px) {
+  .sidebar {
+    position: fixed;
+    top: 56px;
+    left: -100%;
+    width: 70%;
+    max-width: 300px;
+    z-index: 1030;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  .sidebar.show-mobile { left: 0; }
+}

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard Admin - Data Mahasiswa</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+:root { --bg:#f4f6f8; --card:#fff; --primary:#0d6efd; --accent:#3498db; }
+body { font-family:'Segoe UI',sans-serif; background:var(--bg); margin:0; padding:0; }
+
+/* Navbar */
+header.navbar { box-shadow:0 2px 6px rgba(0,0,0,0.1); position:relative; }
+.navbar .navbar-brand {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Sidebar */
+.sidebar { background: var(--card); min-height:calc(100vh - 56px); border-right:1px solid rgba(0,0,0,0.08); transition:all 0.3s ease;}
+.sidebar .nav-link { color:#555; font-weight:500; transition:all 0.2s; pointer-events:auto; opacity:1;}
+.sidebar .nav-link.active, .sidebar .nav-link:hover { background: var(--primary); color:white; border-radius:6px;}
+.sidebar .nav-link.disabled { pointer-events:none; opacity:0.5; }
+
+/* Card */
+.card { border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,0.05);}
+.card .card-title { color:var(--primary);}
+
+/* Table */
+.table { border-radius:8px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+.table-striped tbody tr:nth-of-type(odd) { background-color:#f1f3f5;}
+.table-hover tbody tr:hover { background-color: rgba(52, 152, 219, 0.1); transform:translateY(-2px); transition:all 0.2s;}
+
+/* Form input */
+form input { border-radius:8px; border:1px solid #ccc; padding:10px; transition:all 0.2s;}
+form input:focus { border-color:var(--primary); box-shadow:0 0 8px rgba(13,110,253,0.2);}
+
+/* Button */
+button { border-radius:8px; transition:all 0.2s;}
+button:hover { transform:translateY(-2px); }
+
+/* Modal */
+.modal-content { border-radius:10px; }
+
+/* Responsive */
+@media(max-width:767.98px){
+  .sidebar {position:fixed; top:56px; left:-100%; width:70%; max-width:300px; z-index:1030; box-shadow:0 10px 30px rgba(0,0,0,0.2);}
+  .sidebar.show-mobile{left:0;}
+}
+
+/* Pulse animation */
+.pulse{animation:pulse 600ms ease}
+@keyframes pulse{0%{transform:scale(.995);opacity:.9}50%{transform:scale(1.02);opacity:1}100%{transform:scale(1);opacity:1}}
+</style>
+</head>
+<body>
+
+<header class="navbar navbar-dark bg-primary sticky-top">
+  <div class="container-fluid">
+    <button id="sidebarToggle" class="btn btn-outline-light me-2">☰</button>
+    <a class="navbar-brand" href="#">Admin Dashboard</a>
+  </div>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+    <aside id="sidebar" class="col-12 col-md-3 col-lg-2 sidebar px-3">
+      <nav class="pt-3">
+        <ul class="nav flex-column">
+          <li class="nav-item"><a class="nav-link active" href="#dashboardSection">Dashboard</a></li>
+          <li class="nav-item"><a id="linkDaftar" class="nav-link disabled" href="#tableCard">Daftar Mahasiswa</a></li>
+          <li class="nav-item"><a id="linkPengaturan" class="nav-link disabled" href="#pengaturanSection">Pengaturan</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="col-12 col-md-9 col-lg-10 py-4">
+      <div class="container">
+        <!-- Dashboard -->
+        <section id="dashboardSection" class="row mb-4">
+          <div class="col-md-6 mb-3">
+            <div class="card p-3 text-center">
+              <h5 class="card-title">Total Mahasiswa</h5>
+              <h2 id="totalStudents">0</h2>
+            </div>
+          </div>
+          <div class="col-md-6 mb-3">
+            <div class="card p-3 text-center">
+              <h5 class="card-title">Jumlah Jurusan Unik</h5>
+              <h2 id="uniqueMajors">0</h2>
+            </div>
+          </div>
+        </section>
+
+        <!-- Daftar Mahasiswa -->
+        <section id="tableCard" class="mb-4">
+          <div class="card shadow-sm p-3">
+            <h5 class="card-title d-flex justify-content-between align-items-center">Daftar Mahasiswa <small id="countBadge" class="badge bg-secondary ms-2">0</small></h5>
+            <div class="mb-3">
+              <input type="text" id="searchInput" class="form-control" placeholder="Cari mahasiswa..." disabled>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-striped table-hover align-middle">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Nama</th>
+                    <th>NIM</th>
+                    <th>Jurusan</th>
+                    <th>Email</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="studentTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Pengaturan -->
+        <section id="pengaturanSection" class="mb-4">
+          <div class="card shadow-sm p-3">
+            <h5 class="card-title">Pengaturan Mahasiswa</h5>
+            <form id="addForm">
+              <div class="mb-2">
+                <label for="name" class="form-label">Nama</label>
+                <input id="name" type="text" class="form-control" required>
+              </div>
+              <div class="mb-2">
+                <label for="nim" class="form-label">NIM</label>
+                <input id="nim" type="text" class="form-control" required pattern="\d*" title="Hanya angka" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              </div>
+              <div class="mb-2">
+                <label for="major" class="form-label">Jurusan</label>
+                <input id="major" type="text" class="form-control" required>
+              </div>
+              <div class="mb-2">
+                <label for="email" class="form-label">Email</label>
+                <input id="email" type="email" class="form-control">
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Tambah Mahasiswa</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modals (Edit & Delete) -->
+<div class="modal fade" id="editModal" tabindex="-1">
+  <div class="modal-dialog"><div class="modal-content p-3">
+    <h5 class="modal-title">Edit Mahasiswa</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <form id="editForm" class="mt-3">
+      <input type="hidden" id="editIndex">
+      <div class="mb-2"><label class="form-label">Nama</label><input id="editName" class="form-control" required></div>
+      <div class="mb-2"><label class="form-label">NIM</label><input id="editNim" class="form-control" required pattern="\d*" oninput="this.value=this.value.replace(/[^0-9]/g,'')"></div>
+      <div class="mb-2"><label class="form-label">Jurusan</label><input id="editMajor" class="form-control" required></div>
+      <div class="mb-2"><label class="form-label">Email</label><input id="editEmail" class="form-control"></div>
+    </form>
+    <div class="d-flex justify-content-end mt-3">
+      <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Batal</button>
+      <button type="button" id="saveEditBtn" class="btn btn-primary">Simpan</button>
+    </div>
+  </div></div>
+</div>
+
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-sm modal-dialog-centered"><div class="modal-content p-3 text-center">
+    <h5>Hapus Data</h5><p>Apakah Anda yakin ingin menghapus data ini?</p>
+    <input type="hidden" id="deleteIndex">
+    <div class="d-flex justify-content-between">
+      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+      <button type="button" id="confirmDeleteBtn" class="btn btn-danger">Hapus</button>
+    </div>
+  </div></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// Data Mahasiswa
+const students=[];
+const addForm=document.getElementById('addForm');
+const studentTableBody=document.getElementById('studentTableBody');
+const countBadge=document.getElementById('countBadge');
+const totalStudents=document.getElementById('totalStudents');
+const uniqueMajors=document.getElementById('uniqueMajors');
+const linkDaftar=document.getElementById('linkDaftar');
+const linkPengaturan=document.getElementById('linkPengaturan');
+const searchInput=document.getElementById('searchInput');
+let editModalInstance=null;
+let deleteModalInstance=null;
+
+function escapeHtml(t){return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function isValidNIM(nim){return /^\d+$/.test(nim);}
+function updateDashboard(){ totalStudents.textContent=students.length; uniqueMajors.textContent=[...new Set(students.map(s=>s.major))].length; }
+function enableLinks(){ linkDaftar.classList.remove('disabled'); linkPengaturan.classList.remove('disabled'); searchInput.disabled=false; }
+
+function renderTable(){
+  studentTableBody.innerHTML='';
+  students.forEach((s,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${i+1}</td><td>${escapeHtml(s.name)}</td><td>${escapeHtml(s.nim)}</td><td>${escapeHtml(s.major)}</td><td>${escapeHtml(s.email||'')}</td>
+    <td><button class="btn-edit btn btn-sm btn-outline-primary me-1" data-index="${i}">Edit</button>
+    <button class="btn-delete btn btn-sm btn-outline-danger" data-index="${i}">Hapus</button></td>`;
+    studentTableBody.appendChild(tr);
+    if(i===students.length-1){ tr.classList.add('table-success'); setTimeout(()=>tr.classList.remove('table-success'),1000);}
+  });
+  countBadge.textContent=students.length;
+  updateDashboard();
+  if(students.length>0) enableLinks();
+}
+
+addForm.addEventListener('submit',function(e){
+  e.preventDefault();
+  const name=document.getElementById('name').value.trim();
+  const nim=document.getElementById('nim').value.trim();
+  const major=document.getElementById('major').value.trim();
+  const email=document.getElementById('email').value.trim();
+  if(!name||!nim||!major){ alert('Nama, NIM, dan Jurusan wajib diisi.'); return;}
+  if(!isValidNIM(nim)){ alert('NIM hanya boleh angka.'); return;}
+  students.push({name,nim,major,email});
+  renderTable(); addForm.reset();
+});
+
+// Edit & Delete
+studentTableBody.addEventListener('click',function(e){
+  const btn=e.target.closest('button'); if(!btn) return;
+  const index=Number(btn.getAttribute('data-index'));
+  if(btn.classList.contains('btn-edit')) openEditModal(index);
+  else if(btn.classList.contains('btn-delete')) openDeleteModal(index);
+});
+function openEditModal(i){ 
+  const s=students[i]; document.getElementById('editIndex').value=i;
+  document.getElementById('editName').value=s.name;
+  document.getElementById('editNim').value=s.nim;
+  document.getElementById('editMajor').value=s.major;
+  document.getElementById('editEmail').value=s.email||'';
+  editModalInstance=new bootstrap.Modal(document.getElementById('editModal')); editModalInstance.show();
+}
+document.getElementById('saveEditBtn').addEventListener('click',function(){
+  const i=Number(document.getElementById('editIndex').value);
+  const name=document.getElementById('editName').value.trim();
+  const nim=document.getElementById('editNim').value.trim();
+  const major=document.getElementById('editMajor').value.trim();
+  const email=document.getElementById('editEmail').value.trim();
+  if(!name||!nim||!major){ alert('Nama, NIM, dan Jurusan wajib diisi.'); return;}
+  if(!isValidNIM(nim)){ alert('NIM hanya boleh angka.'); return;}
+  students[i]={name,nim,major,email}; renderTable();
+  if(editModalInstance) editModalInstance.hide();
+});
+function openDeleteModal(i){ document.getElementById('deleteIndex').value=i; deleteModalInstance=new bootstrap.Modal(document.getElementById('deleteModal')); deleteModalInstance.show();}
+document.getElementById('confirmDeleteBtn').addEventListener('click',function(){ 
+  const i=Number(document.getElementById('deleteIndex').value);
+  if(i>=0&&i<students.length){students.splice(i,1); renderTable();}
+  if(deleteModalInstance) deleteModalInstance.hide();
+});
+
+// Sidebar toggle
+$(function(){ $('#sidebarToggle').on('click',function(){$('#sidebar').toggleClass('collapsed'); $('#sidebar').toggleClass('show-mobile');}); });
+
+// Smooth scroll
+document.querySelectorAll('.sidebar .nav-link').forEach(link=>{ link.addEventListener('click',function(e){
+  e.preventDefault(); const id=this.getAttribute('href').slice(1);
+  const target=document.getElementById(id); if(target) window.scrollTo({top:target.offsetTop-56,behavior:'smooth'});
+});});
+
+// Search
+searchInput.addEventListener('input',function(){
+  const q=this.value.toLowerCase();
+  Array.from(studentTableBody.children).forEach(tr=>{
+    const name=tr.children[1].textContent.toLowerCase();
+    const nim=tr.children[2].textContent.toLowerCase();
+    const major=tr.children[3].textContent.toLowerCase();
+    tr.style.display=(name.includes(q)||nim.includes(q)||major.includes(q))?'':'none';
+  });
+});
+
+renderTable();
+</script>
+</body>
+</html>
